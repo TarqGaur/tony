@@ -70,7 +70,7 @@ const Crypto = {
 // ========================================================
 // SECTION 2: FIREBASE + AUTH CONFIGURATION
 // ========================================================
-const ADMIN_EMAILS = ['tarqgaur7@gmail.com'];
+const ADMIN_EMAILS = ['tarqgaur7@gmail.com','astrakshaya@gmail.com'];
 
 const DEFAULT_ROOMS = [
     { id: 'general',   name: 'General',    icon: 'G', description: 'Open discussion — say anything', color: '#8b7355' },
