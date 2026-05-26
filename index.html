@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AION — Encrypted Group Chat</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+    rel="stylesheet">
+  <style>
+
+  </style>
+</head>
+
+<body>
+  <div id="app" class="app-container" style="display:block;width:100%;height:100vh;overflow:hidden;">
+
+    <!-- SPLASH SCREEN -->
+    <div id="splashScreen">
+      <div class="splash-particles" id="splashParticles"></div>
+      <div class="splash-logo">AION</div>
+      <div class="splash-tagline">Encrypted · Secure · Private</div>
+      <div class="splash-card">
+        <h2>Sign in to continue</h2>
+        <button class="google-signin-btn" id="googleSignInBtn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+          Continue with Google
+        </button>
+        <div class="splash-security">
+          All messages encrypted end-to-end<br>
+          AES-256-GCM · Argon2id key derivation<br>
+          Zero knowledge — we cannot read your chats
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSWORD SCREEN -->
+    <div id="passwordScreen">
+      <div class="pwd-user-info">
+        <img id="pwdAvatar" class="pwd-avatar" src="" alt="">
+        <div>
+          <div id="pwdName" class="pwd-user-name">Loading…</div>
+          <div id="pwdEmail" class="pwd-user-email">email@example.com</div>
+        </div>
+      </div>
+      <div class="pwd-card">
+        <h2>Enter Chat Password</h2>
+        <p>This password encrypts your messages. All members of a room must use the same password.</p>
+        <input type="password" id="pwdInput" class="pwd-input" placeholder="Enter your chat password…"
+          autocomplete="current-password">
+        <button class="pwd-submit-btn" id="pwdSubmitBtn">Unlock &amp; Enter</button>
+        <div id="pwdError" class="pwd-error"></div>
+        <div class="pwd-signout" id="pwdSignoutBtn">Sign out and use a different account</div>
+      </div>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <div id="lobbyScreen">
+      <div class="lobby-header">
+        <div class="lobby-brand">AION</div>
+        <div class="lobby-user">
+          <img id="lobbyAvatar" class="lobby-avatar" src="" alt="">
+          <span id="lobbyUsername" class="lobby-username">User</span>
+          <span id="adminBadge" class="admin-badge" style="display:none">Admin</span>
+          <button class="lobby-signout-btn" id="lobbySignoutBtn">Sign out</button>
+        </div>
+      </div>
+
+      <div class="lobby-body">
+        <!-- Presence sidebar -->
+        <div class="presence-sidebar">
+          <div class="presence-sidebar-header">Members</div>
+          <div id="presenceBar"></div>
+        </div>
+
+        <!-- Main content -->
+        <div class="lobby-main">
+          <div class="lobby-title">Chat Rooms</div>
+          <div class="lobby-subtitle">Select a room to join &middot; End-to-end encrypted</div>
+
+          <div class="rooms-grid" id="roomsGrid">
+            <!-- Rooms rendered by JS -->
+          </div>
+
+          <!-- Admin Panel -->
+          <div class="admin-panel" id="adminPanel">
+            <div class="admin-panel-header">
+              <h3>Administration</h3>
+            </div>
+            <div class="admin-panel-body">
+              <div class="admin-panel-section">
+                <div class="admin-section-label">Room Management</div>
+                <div class="admin-actions">
+                  <button class="admin-btn primary" id="createRoomAdminBtn">Create Room</button>
+                  <button class="admin-btn danger" id="deleteRoomAdminBtn">Delete Room</button>
+                </div>
+              </div>
+              <div class="admin-panel-section">
+                <div class="admin-section-label">User Management</div>
+                <div class="admin-actions">
+                  <button class="admin-btn secondary" id="viewMembersAdminBtn">View All Members</button>
+                  <button class="admin-btn secondary" id="manageBannedBtn">Manage Bans</button>
+                </div>
+              </div>
+              <div class="settings-section settings-section-admin">
+                <h3>Admin Controls</h3>
+                <label class="toggle-label" style="margin-bottom:10px;"><input type="checkbox"
+                    id="hideStatusToggle"><span>Hide member presence from non-admins</span></label>
+                <label class="toggle-label"><input type="checkbox" id="hideDMsToggle"><span>Disable private messaging
+                    for members</span></label>
+              </div>
+              <div class="admin-panel-section">
+                <div class="admin-section-label">Security</div>
+                <div class="admin-actions">
+                  <button class="admin-btn warning" id="changePasswordAdminBtn">Change Global Password</button>
+                </div>
+              </div>
+              <div class="admin-panel-section">
+                <div class="admin-section-label">Calling &amp; Voice</div>
+                <div class="admin-actions">
+                  <button class="admin-btn secondary" id="lobbyDisableCallsBtn">Toggle Calls</button>
+                  <button class="admin-btn secondary" id="lobbyLockVoiceBtn">Toggle Voice Room</button>
+                </div>
+                <label class="toggle-label" style="margin-top:10px;"><input type="checkbox" id="disableCallsToggle"><span>Disable all calling for members</span></label>
+                <label class="toggle-label"><input type="checkbox" id="lockVoiceRoomToggle"><span>Lock voice room (members can't join)</span></label>
+              </div>
+              <div class="admin-panel-section">
+                <div class="admin-section-label">Broadcast</div>
+                <div class="admin-actions">
+                  <button class="admin-btn broadcast" id="broadcastAlertBtn">&#9741; Send Alert to Everyone</button>
+                  <button class="admin-btn secondary" id="manageAlertsBtn">Manage Alerts</button>
+                </div>
+              </div>
+              <div id="adminStatus"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT SCREEN -->
+    <div id="chatScreen" class="screen">
+
+      <!-- Dual Robot Background Stage -->
+      <div id="robotStage">
+        <canvas id="robotCanvas"></canvas>
+        <div id="speechLeft" class="robot-speech"></div>
+        <div id="speechRight" class="robot-speech"></div>
+        <div id="thinkLeft" class="robot-thinking"><span></span><span></span><span></span></div>
+        <div id="thinkRight" class="robot-thinking"><span></span><span></span><span></span></div>
+        <div id="statusLeft" class="robot-status"></div>
+        <div id="statusRight" class="robot-status"></div>
+        <div id="labelLeft" class="robot-label"></div>
+        <div id="labelRight" class="robot-label"></div>
+      </div>
+
+      <!-- Admin Bar -->
+      <div class="admin-chat-bar" id="adminChatBar">
+        <span class="admin-chat-bar-label">Admin</span>
+        <button class="admin-chat-btn" id="toggleMembersBtn">Members</button>
+        <button class="admin-chat-btn" id="clearRoomChatBtn">Clear Chat</button>
+        <button class="admin-chat-btn danger" id="lockRoomBtn">Lock Room</button>
+        <button class="admin-chat-btn broadcast" id="broadcastChatBtn">&#9741; Broadcast</button>
+        <button class="admin-chat-btn call-btn" id="adminGroupCallBtn">&#128222; Group Call</button>
+        <button class="admin-chat-btn call-btn" id="adminDisableCallsBtn">Disable Calls</button>
+        <button class="admin-chat-btn call-btn" id="adminLockVoiceBtn">Lock Voice Room</button>
+      </div>
+
+      <!-- Chat Header -->
+      <div id="chatHeader" class="chat-header">
+        <div class="header-left">
+          <button class="header-back-btn" id="backToLobbyBtn" title="Back to lobby">&#8592;</button>
+          <div>
+            <div class="room-breadcrumb">AION CHAT</div>
+            <h3 id="roomNameDisplay"
+              style="margin:0;font-size:1rem;font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:0.04em;">
+              Chat Room</h3>
+          </div>
+        </div>
+        <div id="robotEmojiHeader" class="robot-emoji-pair" style="visibility:hidden;"></div>
+        <div class="header-actions">
+          <div class="dm-notif-bell-wrap" id="dmNotifBell" title="Direct Messages">
+            <span class="dm-notif-bell-icon">&#128276;</span>
+            <span class="dm-notif-badge" id="dmNotifBadge"></span>
+          </div>
+          <button id="settingsBtn" class="icon-btn" title="Settings" style="display:none">&#9881;</button>
+          <button id="voiceRoomBtn" class="icon-btn voice-room-btn" title="Voice Room">&#127908;</button>
+          <button id="startCallBtn" class="icon-btn call-icon-btn" title="Start Call">&#128222;</button>
+          <button id="shareRoomBtn" class="icon-btn" title="Share Room">&#8599;</button>
+          <button id="membersToggleBtn" class="icon-btn" title="Members">&#9776;</button>
+          <button id="leaveRoomBtn" class="icon-btn" title="Leave">&#8592; Leave</button>
+        </div>
+      </div>
+
+      <!-- Background Image Layer -->
+      <div id="backgroundImageLayer" class="background-image-layer" style="z-index:-1"></div>
+
+      <!-- Messages Container -->
+      <div id="messagesContainer" class="messages-container" style="position:relative;z-index:5;"></div>
+
+      <!-- Typing Indicator -->
+      <div id="typingIndicator" class="typing-indicator hidden">
+        <span class="typing-dots"><span></span><span></span><span></span></span>
+        <span>typing...</span>
+      </div>
+
+      <!-- Message Input -->
+      <div class="message-input-container" style="position:relative;z-index:10;">
+        <div class="attach-menu" id="attachMenu">
+          <div class="attach-option" id="attachImageOpt"><span>&#128247;</span><span>Photo / Image</span></div>
+          <div class="attach-option" id="attachDocOpt"><span>&#128196;</span><span>Document / File</span></div>
+        </div>
+        <button id="attachBtn" title="Attach">&#128206;</button>
+        <textarea id="messageInput" placeholder="Type your message…" rows="1"></textarea>
+        <button id="sendMessageBtn" class="btn btn-send">Send</button>
+      </div>
+
+      <!-- Members Panel -->
+      <div id="membersPanel">
+        <div class="members-header">
+          <h4>Members</h4>
+          <button id="closeMembersBtn" class="icon-btn" style="font-size:0.85rem;">&#10005;</button>
+        </div>
+        <div class="members-list" id="membersList"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PANEL (Admin only) -->
+    <div id="settingsPanel" class="settings-panel">
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button id="closeSettingsBtn" class="icon-btn">&#10005;</button>
+      </div>
+      <div class="settings-content">
+        <div class="settings-section provider-section">
+          <h3>AI Provider</h3>
+          <p style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:12px">Which AI drives the robots?</p>
+          <div class="provider-toggle-row">
+            <button class="provider-btn active" data-provider="cerebras">CEREBRAS</button>
+            <button class="provider-btn" data-provider="groq">GROQ</button>
+            <button class="provider-btn" data-provider="openrouter">OPENROUTER</button>
+            <button class="provider-btn" data-provider="nvidia">NVIDIA</button>
+            <button class="provider-btn" data-provider="inception">MERCURY 2</button>
+          </div>
+          <div
+            style="margin-top:10px;padding:10px;background:var(--bg-secondary);border-radius:6px;font-size:0.78rem;color:var(--text-secondary)">
+            <span id="providerStatus">Cerebras — Fastest</span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>Background</h3>
+          <div class="form-group">
+            <label>Chat Background Color</label>
+            <input type="color" id="chatBgColorPicker" class="color-picker" value="#faf9f7">
+          </div>
+          <div class="form-group">
+            <label>Background Image</label>
+            <button id="uploadBgImageBtn" class="btn btn-secondary btn-small">Upload Image</button>
+            <input type="file" id="bgImageInput" accept="image/*" hidden>
+            <button id="removeBgImageBtn" class="btn btn-secondary btn-small">Remove</button>
+          </div>
+          <div class="form-group">
+            <label>Background Opacity</label>
+            <input type="range" id="bgOpacitySlider" min="0" max="100" value="100">
+            <span id="bgOpacityValue">100%</span>
+          </div>
+          <div class="form-group">
+            <label>Background Color</label>
+            <input type="color" id="bgColorPicker" class="color-picker">
+          </div>
+        </div>
+        <div class="settings-section">
+          <h3>Chat Colors</h3>
+          <div class="form-group"><label>My Message Bubble</label><input type="color" id="myBubbleColorPicker"
+              class="color-picker" value="#1a1814"></div>
+          <div class="form-group"><label>Other Message Bubble</label><input type="color" id="otherBubbleColorPicker"
+              class="color-picker" value="#f0ede8"></div>
+          <div class="form-group"><label>My Text Color</label><input type="color" id="myTextColorPicker"
+              class="color-picker" value="#ffffff"></div>
+          <div class="form-group"><label>Other Text Color</label><input type="color" id="otherTextColorPicker"
+              class="color-picker" value="#1a1814"></div>
+        </div>
+        <div class="settings-section">
+          <h3>Shapes</h3>
+          <div class="form-group"><label>Bubble Shape</label><select id="bubbleShapeSelect" class="form-control">
+              <option value="rounded">Rounded</option>
+              <option value="medium">Medium</option>
+              <option value="sharp">Sharp</option>
+            </select></div>
+          <div class="form-group"><label>Input Shape</label><select id="inputShapeSelect" class="form-control">
+              <option value="rounded">Rounded</option>
+              <option value="medium">Medium</option>
+              <option value="sharp">Sharp</option>
+            </select></div>
+          <div class="form-group"><label>Button Shape</label><select id="buttonShapeSelect" class="form-control">
+              <option value="rounded">Rounded</option>
+              <option value="medium">Medium</option>
+              <option value="sharp">Sharp</option>
+              <option value="pill">Pill</option>
+            </select></div>
+        </div>
+        <div class="settings-section">
+          <h3>Header Bar</h3>
+          <label class="toggle-label"><input type="checkbox" id="headerVisibleToggle" checked><span>Show Header
+              Bar</span></label>
+          <div class="form-group"><label>Header Background</label><input type="color" id="headerBgColorPicker"
+              class="color-picker" value="#ffffff"></div>
+          <div class="form-group"><label>Header Text Color</label><input type="color" id="headerTextColorPicker"
+              class="color-picker" value="#1a1814"></div>
+        </div>
+        <div class="settings-section">
+          <h3>Text &amp; Fonts</h3>
+          <div class="form-group"><label>Font Size</label><select id="fontSizeSelect" class="form-control">
+              <option value="12">Small (12px)</option>
+              <option value="14">Medium (14px)</option>
+              <option value="15" selected>Normal (15px)</option>
+              <option value="17">Large (17px)</option>
+              <option value="19">Extra Large (19px)</option>
+            </select></div>
+          <div class="form-group"><label>Font Family</label><select id="fontFamilySelect" class="form-control">
+              <option value="'DM Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">DM Sans</option>
+              <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Courier New', monospace">Courier New</option>
+            </select></div>
+        </div>
+        <div class="settings-section">
+          <h3>Background Music</h3>
+          <label class="toggle-label"><input type="checkbox" id="musicToggle"><span>Enable Background
+              Music</span></label>
+          <div class="form-group"><button id="uploadMusicBtn" class="btn btn-secondary btn-small">Choose Audio
+              File</button><input type="file" id="musicFileInput" accept="audio/*" hidden></div>
+          <div id="musicControls" class="music-controls hidden">
+            <div class="music-info"><span id="musicFileName">No file selected</span></div>
+            <div class="button-group">
+              <button id="playMusicBtn" class="btn btn-secondary btn-small">Play</button>
+              <button id="pauseMusicBtn" class="btn btn-secondary btn-small">Pause</button>
+              <button id="stopMusicBtn" class="btn btn-secondary btn-small">Stop</button>
+            </div>
+          </div>
+          <div class="form-group"><label>Volume</label><input type="range" id="musicVolumeSlider" min="0" max="100"
+              value="50"><span id="musicVolumeValue">50%</span></div>
+        </div>
+        <div class="settings-section">
+          <h3>Background Text Overlay</h3>
+          <label class="toggle-label"><input type="checkbox" id="bgTextToggle"><span>Show Text on
+              Background</span></label>
+          <div class="form-group"><label>Overlay Text</label><input type="text" id="bgTextInput"
+              placeholder="e.g., Our Private Space"></div>
+          <div class="form-group"><label>Text Size</label><input type="range" id="bgTextSizeSlider" min="20" max="100"
+              value="40"><span id="bgTextSizeValue">40px</span></div>
+          <div class="form-group"><label>Text Color</label><input type="color" id="bgTextColorPicker"
+              class="color-picker" value="#ffffff"></div>
+          <div class="form-group"><label>Text Position</label><select id="bgTextPositionSelect" class="form-control">
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+            </select></div>
+        </div>
+        <!-- Admin-only section -->
+
+
+        <div class="settings-section">
+          <div class="button-group">
+            <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+            <button id="resetSettingsBtn" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div id="shareModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Share Room</h3>
+        <p style="font-size:0.78rem;color:#7a7570;font-family:'DM Sans',sans-serif;margin-bottom:12px;">Anyone with this
+          link can join after signing in and entering the password.</p>
+        <div class="share-link-container">
+          <input type="text" id="shareLinkInput" readonly>
+          <button id="copyLinkBtn" class="btn btn-primary">Copy</button>
+        </div>
+        <p class="warning">Share the chat password through a separate, secure channel.</p>
+        <button id="closeShareModal" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+
+    <!-- ROOM PASSWORD MODAL -->
+    <div id="roomPasswordModal">
+      <div class="rpwd-card">
+        <h3 id="rpwdRoomName">Join Room</h3>
+        <p id="rpwdRoomDesc">Enter the password for this room to join the conversation.</p>
+        <input type="password" id="rpwdInput" class="rpwd-input" placeholder="Room password…">
+        <div class="rpwd-btn-row">
+          <button class="rpwd-btn cancel" id="rpwdCancelBtn">Cancel</button>
+          <button class="rpwd-btn primary" id="rpwdSubmitBtn">Join</button>
+        </div>
+        <div id="rpwdError" class="rpwd-error"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN ROOM MODAL -->
+    <div id="adminRoomModal">
+      <div class="arm-card">
+        <h3 id="armTitle">Create Room</h3>
+        <input type="text" id="armNameInput" class="arm-input" placeholder="Room name">
+        <input type="text" id="armIconInput" class="arm-input" placeholder="Room icon letter (e.g. X)">
+        <input type="text" id="armDescInput" class="arm-input" placeholder="Short description">
+        <input type="password" id="armPwdInput" class="arm-input" placeholder="Room password (min 6 characters)">
+        <div class="arm-note">After creation, the shareable link will be copied to your clipboard automatically. Anyone
+          with the link can join after authenticating and entering this password.</div>
+        <div class="arm-btn-row">
+          <button class="arm-btn cancel" id="armCancelBtn">Cancel</button>
+          <button class="arm-btn primary" id="armSubmitBtn">Create</button>
+        </div>
+        <div id="armStatus" class="arm-status"></div>
+      </div>
+    </div>
+
+    <!-- CHANGE PASSWORD MODAL -->
+    <div id="changePasswordModal">
+      <div class="cpwd-card">
+        <h3>Change Global Password</h3>
+        <p>This changes the entry password for all default rooms. All members will need to use the new password on their
+          next login.</p>
+        <label class="cpwd-label">Current Password</label>
+        <input type="password" id="changePwdOld" class="cpwd-input" placeholder="Current password">
+        <label class="cpwd-label">New Password</label>
+        <input type="password" id="changePwdNew" class="cpwd-input" placeholder="New password (min 6 characters)">
+        <label class="cpwd-label">Confirm New Password</label>
+        <input type="password" id="changePwdConfirm" class="cpwd-input" placeholder="Repeat new password">
+        <div class="cpwd-btn-row">
+          <button class="cpwd-btn cancel" id="changePwdCancelBtn">Cancel</button>
+          <button class="cpwd-btn primary" id="changePwdSubmitBtn">Update Password</button>
+        </div>
+        <div id="changePwdError"></div>
+        <div id="changePwdSuccess"></div>
+      </div>
+    </div>
+
+    <!-- GLOBAL MEMBERS MODAL -->
+    <div id="globalMembersModal">
+      <div class="gm-card">
+        <div class="gm-card-header">
+          <h3>All Members</h3>
+          <button id="closeGlobalMembersBtn" class="gm-close-btn">Close</button>
+        </div>
+        <div id="globalMembersList"></div>
+      </div>
+    </div>
+
+    <!-- DM Notification Toast Container -->
+    <div id="dmToastContainer" class="dm-toast-container"></div>
+
+    <!-- INCOMING CALL MODAL -->
+    <div id="incomingCallModal" class="incoming-call-modal hidden">
+      <div class="incoming-call-card">
+        <div class="incoming-call-avatar" id="incomingCallAvatar"></div>
+        <div class="incoming-call-name" id="incomingCallName">Someone</div>
+        <div class="incoming-call-type" id="incomingCallType">is calling you...</div>
+        <div class="incoming-call-actions">
+          <button class="call-accept-btn" id="acceptCallBtn">&#128222; Accept</button>
+          <button class="call-reject-btn" id="rejectCallBtn">&#128222; Decline</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOATING CALL BOX (minimized/expanded) -->
+    <div id="callFloatBox" class="call-float-box hidden" data-state="minimized">
+      <div class="call-float-mini" id="callFloatMini">
+        <span class="call-float-pulse"></span>
+        <span id="callFloatLabel">In Call</span>
+        <span class="call-float-expand-hint">&#9650;</span>
+      </div>
+      <div class="call-float-expanded" id="callFloatExpanded">
+        <div class="call-float-header">
+          <span id="callFloatTitle">&#128222; Active Call</span>
+          <button class="call-float-collapse" id="callFloatCollapse" title="Minimize">&#8211;</button>
+        </div>
+        <div class="call-participants-area">
+          <div class="call-participants-label">Participants</div>
+          <div class="call-participants" id="callParticipants"></div>
+        </div>
+        <div class="call-float-controls">
+          <button class="call-ctrl-btn" id="callMicBtn" title="Toggle Mic">&#127908; Mic On</button>
+          <button class="call-ctrl-btn danger" id="callHangupBtn" title="End Call">&#128222; End</button>
+        </div>
+        <div class="call-timer" id="callTimer">00:00</div>
+      </div>
+    </div>
+
+    <!-- VOICE ROOM PANEL (Discord-VC style) -->
+    <div id="voiceRoomPanel" class="voice-room-panel hidden">
+      <div class="voice-room-header">
+        <div>
+          <div class="voice-room-title">&#127908; Voice Room</div>
+          <div class="voice-room-subtitle" id="voiceRoomSubtitle">Join to start talking</div>
+        </div>
+        <button class="voice-room-close" id="voiceRoomClose">&#10005;</button>
+      </div>
+      <div class="voice-room-members" id="voiceRoomMembers"></div>
+      <div class="voice-room-controls">
+        <button class="voice-join-btn" id="voiceJoinBtn">Join Voice</button>
+        <button class="voice-mic-btn hidden" id="voiceMicBtn">&#127908; Mic On</button>
+        <button class="voice-leave-btn hidden" id="voiceLeaveBtn">Leave</button>
+      </div>
+      <div class="voice-room-status" id="voiceRoomStatus"></div>
+      <div class="voice-room-locked-notice hidden" id="voiceRoomLockedNotice">
+        &#128274; Voice room is locked by admin
+      </div>
+    </div>
+
+    <!-- MANAGE ALERTS MODAL -->
+    <div id="manageAlertsModal" class="broadcast-modal-wrap">
+      <div class="broadcast-modal-card manage-alerts-card">
+        <div class="broadcast-modal-header">
+          <span class="broadcast-modal-icon">&#128465;</span>
+          <h3>Manage Alerts</h3>
+        </div>
+        <p class="broadcast-modal-desc">Delete past alerts so they no longer appear for members who haven't seen them.</p>
+        <div id="manageAlertsList" class="manage-alerts-list"></div>
+        <div class="broadcast-btn-row" style="margin-top:16px;">
+          <button class="broadcast-btn cancel" id="manageAlertsCancelBtn">Close</button>
+          <button class="broadcast-btn" id="clearAllAlertsBtn" style="background:#c0392b;color:#fff;">Clear All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCAST ALERT MODAL -->
+    <div id="broadcastModal" class="broadcast-modal-wrap">
+      <div class="broadcast-modal-card">
+        <div class="broadcast-modal-header">
+          <span class="broadcast-modal-icon">&#9741;</span>
+          <h3>Send Broadcast Alert</h3>
+        </div>
+        <p class="broadcast-modal-desc">This message will instantly appear on screen for all connected members.</p>
+        <textarea id="broadcastInput" class="broadcast-input" placeholder="Type your announcement…" rows="3" maxlength="300"></textarea>
+        <div class="broadcast-btn-row">
+          <button class="broadcast-btn cancel" id="broadcastCancelBtn">Cancel</button>
+          <button class="broadcast-btn send" id="broadcastSendBtn">&#9741; Send Alert</button>
+        </div>
+        <div id="broadcastStatus" class="broadcast-status"></div>
+      </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+      <p id="loadingText">Processing…</p>
+    </div>
+
+    <!-- Image lightbox -->
+    <div id="imgLightbox">
+      <img id="lightboxImg" src="" alt="">
+    </div>
+
+    <audio id="backgroundAudio" loop></audio>
+    <input type="file" id="imageFileInput" accept="image/*" hidden>
+    <input type="file" id="docFileInput" hidden>
+  </div>
+
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+  <script src="app.js"></script>
+</body>
+
+</html>
