@@ -386,12 +386,38 @@ input[type="range"]::-moz-range-thumb {
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-secondary); }
 
 /* Splash screen */
+
+
+
+
+
+
+
+
+
+
+
+
+#video{
+    height: 100vh; width: 100vw; object-fit: cover; position: absolute;
+    z-index: -1;
+    transform: scale(1.1);
+}
+
+#video2{
+    height: 100vh; width: 100vw; object-fit: cover; position: absolute;
+    /* z-index: 9999; */
+    transform: scale(1.1);
+}
+
+
+
 #splashScreen {
     position: fixed; inset: 0;
-    background: linear-gradient(135deg, #1a1814 0%, #2d2926 40%, #1a1814 100%);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     z-index: 9999; transition: opacity 0.6s ease, transform 0.6s ease;
 }
+
 #splashScreen.hidden { opacity: 0; pointer-events: none; transform: scale(1.03); }
 .splash-logo {
     font-family: 'Cormorant Garamond', serif; font-size: 4.5rem; font-weight: 300;
@@ -424,23 +450,10 @@ input[type="range"]::-moz-range-thumb {
     margin-top: 24px; text-align: center; font-size: 0.68rem; letter-spacing: 0.1em;
     color: rgba(250,249,247,0.28); font-family: 'DM Sans', sans-serif; line-height: 1.8;
 }
-.splash-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-.particle {
-    position: absolute; width: 2px; height: 2px;
-    background: rgba(139,115,85,0.4); border-radius: 50%;
-    animation: floatUp linear infinite;
-}
-@keyframes floatUp {
-    0% { transform: translateY(100vh) scale(0); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
-}
 
 /* Password screen */
 #passwordScreen {
     position: fixed; inset: 0;
-    background: linear-gradient(135deg, #1a1814 0%, #2d2926 40%, #1a1814 100%);
     display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9998;
 }
 #passwordScreen.active { display: flex; }
@@ -468,14 +481,34 @@ input[type="range"]::-moz-range-thumb {
 }
 .pwd-input:focus { border-color: rgba(139,115,85,0.6); }
 .pwd-input::placeholder { color: rgba(250,249,247,0.2); }
+
 .pwd-submit-btn {
-    width: 100%; padding: 13px; background: #8b7355; border: none; border-radius: 10px;
+    width: 100%; padding: 13px; 
+    background: transparent; border: none; border-radius: 10px;
+    backdrop-filter: blur(14px);
     color: #faf9f7; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
     cursor: pointer; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.2s;
 }
-.pwd-submit-btn:hover { background: #9d8463; }
+/* .pwd-submit-btn:hover { background: #9d8463; } */
 .pwd-error { color: #e74c3c; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; margin-top: 10px; text-align: center; min-height: 20px; }
 .pwd-signout { margin-top: 16px; text-align: center; font-size: 0.72rem; color: rgba(250,249,247,0.3); font-family: 'DM Sans', sans-serif; cursor: pointer; letter-spacing: 0.08em; text-decoration: underline; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* Lobby screen */
 #lobbyScreen {
@@ -511,9 +544,12 @@ input[type="range"]::-moz-range-thumb {
 .lobby-signout-btn:hover { background: #f2f0ec; color: #1a1814; }
 .lobby-body { display: flex; flex: 1; min-height: 0; }
 
+
+
+
 /* Presence sidebar */
 .presence-sidebar {
-    width: 240px; flex-shrink: 0; background: #ffffff; border-right: 1px solid #e5e1db;
+    width: 280px; flex-shrink: 0; background: #ffffff; border-right: 1px solid #e5e1db;
     display: flex; flex-direction: column;
     position: sticky; top: 57px; height: calc(100vh - 57px); overflow-y: auto;
 }
@@ -541,6 +577,12 @@ input[type="range"]::-moz-range-thumb {
 .presence-name { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: #1a1814; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .presence-room { display: block; font-family: 'DM Sans', sans-serif; font-size: 0.68rem; color: #4a7c5c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .presence-item.offline .presence-name { color: #9a9590; }
+
+
+
+
+
+
 
 /* Lobby main */
 .lobby-main { flex: 1; padding: 36px 32px; overflow-y: auto; }
